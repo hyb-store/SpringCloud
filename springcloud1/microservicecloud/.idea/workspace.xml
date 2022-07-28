@@ -40,7 +40,11 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
+    "jdk.selected.JAVA_MODULE": "1.8",
     "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "模块",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0",
     "settings.editor.selected.configurable": "MavenSettings"
   }
 }]]></component>
@@ -55,7 +59,7 @@
       <workItem from="1658936164963" duration="146000" />
       <workItem from="1658936482062" duration="2000" />
       <workItem from="1658936503691" duration="37000" />
-      <workItem from="1659017402310" duration="585000" />
+      <workItem from="1659017402310" duration="2453000" />
     </task>
     <servers />
   </component>
