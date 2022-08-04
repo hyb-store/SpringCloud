@@ -17,6 +17,14 @@
     </properties>
 
     <dependencies>
+
+        <!-- 服务注册中心的客户端端 eureka-client -->
+        <!-- https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-eureka-server -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+
         <dependency><!--引入自己定义的api通用包，可以使用entity-->
             <groupId>com.hyb</groupId>
             <artifactId>cloud-api-commons</artifactId>
