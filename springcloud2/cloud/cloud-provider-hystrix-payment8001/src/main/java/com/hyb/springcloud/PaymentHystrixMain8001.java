@@ -1,18 +1,14 @@
 package com.hyb.springcloud;
 
-import com.hyb.myrule.MySelfRule;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
-import org.springframework.cloud.netflix.ribbon.RibbonClient;
 
 @SpringBootApplication
 @EnableEurekaClient
-// 启动该服务时去加载自定义的ribbon配置
-@RibbonClient(name = "CLOUD-PAYMENT-SERVICE", configuration = MySelfRule.class)
-public class OrderMain80 {
+public class PaymentHystrixMain8001 {
 
     public static void main(String[] args) {
-        SpringApplication.run(OrderMain80.class, args);
+        SpringApplication.run(PaymentHystrixMain8001.class, args);
     }
 }
