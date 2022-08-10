@@ -8,7 +8,7 @@ spring:
     config:
       server:
         git:
-          uri: https://gitee.com/lixiaogou/sprincloud-config.git #GitHub上面的git仓库名字
+          uri: https://github.com/hyb-store/SpringCloud.git #GitHub上面的git仓库名字
           search-paths: #搜索目录
             - springcloud-config
       label: master #读取分支
