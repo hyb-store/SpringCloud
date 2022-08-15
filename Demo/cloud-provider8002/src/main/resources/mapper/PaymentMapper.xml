@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+
+<mapper namespace="com.hyb.springcloud.dao.PaymentDao">
+
+    <resultMap  id="PaymentMap" type="com.hyb.springcloud.entities.Payment">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="serial" column="serial" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--参考：http://www.mybatis.cn/mybatis/2012.html
+    useGeneratedKeys 参数只针对 insert 语句生效，默认为 false。当设置为 true 时，
+    表示如果插入的表以自增列为主键，则允许 JDBC 支持自动生成主键，并可将自动生成的主键返回。-->
+    <!--keyProperty 作用:useGeneratedKeys = true 表示使用数据库的自增主键，而数据库的自增主键如何跟实体类的属性进行绑定呢？
+    是通过 keyProperty 属性实现的。
+    keyProperty 使用介绍:在mybatis的配置文件中，keyProperty 和 useGeneratedKeys 往往搭配使用。
+    具体用法： useGeneratedKeys="true" keyProperty="id" -->
+
+    <!--新增所有列-->
+    <insert id="creat" parameterType="Payment" useGeneratedKeys="true" keyProperty="id">
+        insert into payment(serial) values (#{serial})
+    </insert>
+
+    <!--根据id查询单个-->
+    <select id="getPaymentById" resultMap="PaymentMap" parameterType="Long">
+        select id, serial from payment where id = #{id}
+    </select>
+
+</mapper>

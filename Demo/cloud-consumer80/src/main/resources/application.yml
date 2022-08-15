@@ -1,0 +1,57 @@
+server:
+  port: 80
+
+spring:
+  application:
+    name: cloud-consumer
+  zipkin:
+    base-url: http://localhost:9411 #指定zipkin地址
+  sleuth:
+    sampler:
+      # 0-1之间，1表示全部采集
+      probability: 1
+
+eureka:
+  client:
+    register-with-eureka: true #是否向注册中心注册自己
+    #是否从注册中心抓取已有的注册信息 默认true。单节点无所谓，集群必须设置为true，才能配合ribbon使用负载均衡
+    fetch-Registry: true
+    service-url:
+      #设置与eureka server交互的地址查询服务和注册服务都需要依赖这个地址
+      #defaultZone: http://localhost:7001/eureka #单机版
+      defaultZone: http://eureka7001.com:7001/eureka,http://eureka7002.com:7002/eureka  #集群版
+  instance:
+    instance-id: consumer80
+    prefer-ip-address: true #访问路径可以显示IP地址
+
+#设置feign客户端超时时间(OpenFeign默认支持ribbon)
+ribbon:
+  #指的是建立连接后从服务器读取到可用资源所用的时间
+  ReadTimeout: 5000
+  #指的是建立连接所用的时间，适用于网络状况正常的情况下, 两端连接所用的时间
+  ConnectTimeout: 5000
+
+logging:
+  level:
+    # feign日志以 debug 级别监控com.hyb.springcloud.service.PaymentService接口
+    com.hyb.springcloud.service.PaymentService: debug
+
+feign:
+  hystrix:
+    enabled: true #如果处理自身的容错就开启。开启方式与生产端不一样。
+
+#是否开始超时熔断，如果为false，则熔断机制只在服务不可用时开启
+#（spring-cloud-starter-openfeign中的HystrixCommandProperties默认为true）
+hystrix:
+  command:
+    default:
+      execution:
+        timeout:
+          enabled: true
+        #设置超时熔断时间（spring-cloud-starter-openfeign中的HystrixCommandProperties默认为1000毫秒）
+        isolation:
+          thread:
+            timeoutInMilliseconds: 5000
+
+
+

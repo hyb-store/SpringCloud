@@ -1,0 +1,24 @@
+server:
+  port: 3344
+
+spring:
+  application:
+    name: cloud-config-center #注册进Eureka服务器的微服务名
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://gitee.com/huang_yingbo/springcloud-config.git
+          search-paths: #搜索目录
+            - springcloud-config
+      label: master #读取分支
+      #启动成功后访问的路径 http://ip:3344/{label}/{application}-{profile}.yml能访问的配置文件就表示成功了
+      #例如http://localhost:3344/master/config-dev.yml
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka7001.com:7001/eureka,http://eureka7002.com:7002/eureka
+  instance:
+    instance-id: config_center3344
+    prefer-ip-address: true #访问路径可以显示IP地址

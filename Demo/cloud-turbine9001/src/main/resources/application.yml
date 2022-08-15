@@ -1,0 +1,22 @@
+server:
+  port: 9001
+spring:
+  application:
+    name: turbine-dashboard
+
+eureka:
+  client:
+    register-with-eureka: true #是否向注册中心注册自己
+    #是否从注册中心抓取已有的注册信息 默认true。单节点无所谓，集群必须设置为true，才能配合ribbon使用负载均衡
+    fetch-Registry: true
+    service-url:
+      defaultZone: http://eureka7001.com:7001/eureka,http://eureka7002.com:7002/eureka  #集群版
+  instance:
+    instance-id: turbine9001
+    prefer-ip-address: true #访问路径可以显示IP地址
+turbine:
+  appConfig: cloud-payment-service
+  aggregator:
+    clusterConfig: default
+    clusterNameExpression: new String("default")
+  instanceUrlSuffix: /hystrix.stream
