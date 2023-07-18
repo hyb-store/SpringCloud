@@ -101,7 +101,48 @@ eureka:
 
 ## 3、服务熔断/降级
 
+一次调用失败为降级，多级调用失败熔断
+
 ## 4、服务网关
+
+[官网](https://spring.io/projects/spring-cloud-gateway)
+
+### 1.概述
+
+SpringCloud Gateway使用的是Webflux中的reactor-netty响应式编程组件,底层使用了Netty通讯框架。
+
+#### 1.1 特性
+
+- 动态路由：能够匹配任何请求属性
+-  Predicate（断言）和 Filter（过滤器）
+- 集成Hystrix的断路器功能
+- 集成 Spring Cloud 服务发现功能
+- 请求限流功能
+- 支持路径重写
+
+#### 1.2 三大核心概念
+
+**Route(路由)**
+
+路由是构建网关的基本模块，它由ID，目标URI，一系列的断言和过滤器组成，如果断言为true则匹配该路由
+
+**Predicate(断言)**
+
+参考的是Java8的java.util.function.Predicate，开发人员可以匹配HTTP请求中的所有内容(例如请求头或请求参数)，如果请求与断言相匹配则进行路由
+
+**Filter(过滤)**
+
+指的是Spring框架中GatewayFilter的实例，使用过滤器，可以在请求被路由前或者之后对请求进行修改。
+
+
+
+### 2.工作流程
+
+![image-20230718235731346](imag/image-20230718235731346.png)
+
+> Clients make requests to Spring Cloud Gateway. If the Gateway Handler Mapping determines that a request matches a route, it is sent to the Gateway Web Handler. This handler runs the request through a filter chain that is specific to the request. The reason the filters are divided by the dotted line is that filters can run logic both before and after the proxy request is sent. All “pre” filter logic is executed. Then the proxy request is made. After the proxy request is made, the “post” filter logic is run.
+
+客户端向 Spring Cloud Gateway 发出请求。然后在 Gateway Handler Mapping 中找到与请求相匹配的路由，将其发送到 Gateway Web Handler。
 
 ## 5、服务配置&服务总线
 
