@@ -144,6 +144,138 @@ SpringCloud Gateway使用的是Webflux中的reactor-netty响应式编程组件,�
 
 客户端向 Spring Cloud Gateway 发出请求。然后在 Gateway Handler Mapping 中找到与请求相匹配的路由，将其发送到 Gateway Web Handler。
 
+### 4.配置
+
+#### 4.1 pom
+
+```xml
+<dependencies>
+        <!--gateway-->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-gateway</artifactId>
+        </dependency>
+        <!--eureka-client-->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
+</dependencies>
+```
+
+
+
+#### 4.2 yaml 配置方式
+
+```yaml
+server:
+  port: 9527
+
+spring:
+  application:
+    name: cloud-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true #开启从注册中心动态创建路由的功能，利用微服务名进行路由
+      routes:
+        - id: payment_routh #payment_route    #路由的ID，没有固定规则但要求唯一，建议配合服务名
+          #uri: http://localhost:8001          #匹配后提供服务的路由地址
+          uri: lb://cloud-payment-service #匹配后提供服务的路由地址
+          predicates:
+            - Path=/payment/get/**         # 断言，路径相匹配的进行路由
+            - After=2022-08-10T13:45:24.311+08:00[Asia/Shanghai]
+
+        - id: payment_routh2 #payment_route    #路由的ID，没有固定规则但要求唯一，建议配合服务名
+          #uri: http://localhost:8001          #匹配后提供服务的路由地址
+          uri: lb://cloud-payment-service #匹配后提供服务的路由地址
+          predicates:
+            - Path=/payment/lb/**         # 断言，路径相匹配的进行路由
+            - After=2022-08-10T13:45:24.311+08:00[Asia/Shanghai]
+            # - Before=2022-08-10T14:45:24.311+08:00[Asia/Shanghai]
+            # - Between=2022-08-10T14:45:24.311+08:00[Asia/Shanghai] ,  2022-08-10T14:45:24.311+08:00[Asia/Shanghai]
+            # - Cookie=username,zzyy   #Cookie=cookieName,正则表达式
+            # - 请求头要有X-Request-Id属性并且值为整数的正则表达式 curl http://localhost:9527/payment/lb --cookie "username=zzyy" -H "X-Request-Id:11"
+            # - Header=X-Request-Id, \d+
+            # - Host=**.atguigu.com  # curl http://localhost:9527/payment/lb -H "Host:afae.atguigu.com"
+
+eureka:
+  instance:
+    hostname: cloud-gateway-service
+  client: #服务提供者provider注册进eureka服务列表内
+    service-url:
+      register-with-eureka: true
+      fetch-registry: true
+      defaultZone: http://eureka7001.com:7001/eureka,http://eureka7002.com:7002/eureka
+      #defaultZone: http://eureka7001.com:7001/eureka
+```
+
+#### 4.4 主启动类
+
+```java
+@SpringBootApplication
+@EnableEurekaClient
+public class GateWayMain9527 {
+    public static void main(String[] args) {
+        SpringApplication.run(GateWayMain9527.class, args);
+    }
+}
+
+```
+
+
+
+#### 4.3 代码配置方式
+
+```java
+@Configuration
+public class GateWayConfig {
+    @Bean
+    public RouteLocator customRouteLocator(RouteLocatorBuilder routeLocatorBuilder) {
+        RouteLocatorBuilder.Builder routes = routeLocatorBuilder.routes();
+        routes.route("path_route_atguigu", r -> r.path("/guoji").uri("http://news.baidu.com/guonei"))
+                .build();
+        return routes.build();
+    }
+}
+```
+
+官网案例：
+
+```java
+//https://spring.io/projects/spring-cloud-gateway#overview
+@SpringBootApplication
+public class DemogatewayApplication {
+	@Bean
+	public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
+		return builder.routes()
+			.route("path_route", r -> r.path("/get")
+				.uri("http://httpbin.org"))
+			.route("host_route", r -> r.host("*.myhost.org")
+				.uri("http://httpbin.org"))
+			.route("rewrite_route", r -> r.host("*.rewrite.org")
+				.filters(f -> f.rewritePath("/foo/(?<segment>.*)", "/${segment}"))
+				.uri("http://httpbin.org"))
+			.route("hystrix_route", r -> r.host("*.hystrix.org")
+				.filters(f -> f.hystrix(c -> c.setName("slowcmd")))
+				.uri("http://httpbin.org"))
+			.route("hystrix_fallback_route", r -> r.host("*.hystrixfallback.org")
+				.filters(f -> f.hystrix(c -> c.setName("slowcmd").setFallbackUri("forward:/hystrixfallback")))
+				.uri("http://httpbin.org"))
+			.route("limit_route", r -> r
+				.host("*.limited.org").and().path("/anything/**")
+				.filters(f -> f.requestRateLimiter(c -> c.setRateLimiter(redisRateLimiter())))
+				.uri("http://httpbin.org"))
+			.build();
+	}
+}
+```
+
+
+
+
+
 ## 5、服务配置&服务总线
 
 ## 6、Stream消息驱动/Sleuth分布式请求链路跟踪
