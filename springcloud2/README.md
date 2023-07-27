@@ -176,29 +176,16 @@ spring:
     name: cloud-gateway
   cloud:
     gateway:
-      discovery:
-        locator:
-          enabled: true #开启从注册中心动态创建路由的功能，利用微服务名进行路由
       routes:
         - id: payment_routh #payment_route    #路由的ID，没有固定规则但要求唯一，建议配合服务名
-          #uri: http://localhost:8001          #匹配后提供服务的路由地址
-          uri: lb://cloud-payment-service #匹配后提供服务的路由地址
+          uri: http://localhost:8001          #匹配后提供服务的路由地址
           predicates:
             - Path=/payment/get/**         # 断言，路径相匹配的进行路由
-            - After=2022-08-10T13:45:24.311+08:00[Asia/Shanghai]
 
         - id: payment_routh2 #payment_route    #路由的ID，没有固定规则但要求唯一，建议配合服务名
-          #uri: http://localhost:8001          #匹配后提供服务的路由地址
-          uri: lb://cloud-payment-service #匹配后提供服务的路由地址
+          uri: http://localhost:8001          #匹配后提供服务的路由地址
           predicates:
             - Path=/payment/lb/**         # 断言，路径相匹配的进行路由
-            - After=2022-08-10T13:45:24.311+08:00[Asia/Shanghai]
-            # - Before=2022-08-10T14:45:24.311+08:00[Asia/Shanghai]
-            # - Between=2022-08-10T14:45:24.311+08:00[Asia/Shanghai] ,  2022-08-10T14:45:24.311+08:00[Asia/Shanghai]
-            # - Cookie=username,zzyy   #Cookie=cookieName,正则表达式
-            # - 请求头要有X-Request-Id属性并且值为整数的正则表达式 curl http://localhost:9527/payment/lb --cookie "username=zzyy" -H "X-Request-Id:11"
-            # - Header=X-Request-Id, \d+
-            # - Host=**.atguigu.com  # curl http://localhost:9527/payment/lb -H "Host:afae.atguigu.com"
 
 eureka:
   instance:
@@ -272,7 +259,65 @@ public class DemogatewayApplication {
 }
 ```
 
+### 5.服务名实现动态路由
 
+pom添加eureka-client
+
+修改yaml文件
+
+```yaml
+server:
+  port: 9527
+
+spring:
+  application:
+    name: cloud-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true #开启从注册中心动态创建路由的功能，利用微服务名进行路由
+      routes:
+        - id: payment_routh #payment_route    #路由的ID，没有固定规则但要求唯一，建议配合服务名
+          #uri: http://localhost:8001          #匹配后提供服务的路由地址
+          uri: lb://cloud-payment-service #匹配后提供服务的路由地址
+          predicates:
+            - Path=/payment/get/**         # 断言，路径相匹配的进行路由
+            - After=2022-08-10T13:45:24.311+08:00[Asia/Shanghai]
+
+        - id: payment_routh2 #payment_route    #路由的ID，没有固定规则但要求唯一，建议配合服务名
+          #uri: http://localhost:8001          #匹配后提供服务的路由地址
+          uri: lb://cloud-payment-service #匹配后提供服务的路由地址
+          predicates:
+            - Path=/payment/lb/**         # 断言，路径相匹配的进行路由
+            - After=2022-08-10T13:45:24.311+08:00[Asia/Shanghai]
+            # - Before=2022-08-10T14:45:24.311+08:00[Asia/Shanghai]
+            # - Between=2022-08-10T14:45:24.311+08:00[Asia/Shanghai] ,  2022-08-10T14:45:24.311+08:00[Asia/Shanghai]
+            # - Cookie=username,zzyy   #Cookie=cookieName,正则表达式
+            # - 请求头要有X-Request-Id属性并且值为整数的正则表达式 curl http://localhost:9527/payment/lb --cookie "username=zzyy" -H "X-Request-Id:11"
+            # - Header=X-Request-Id, \d+
+            # - Host=**.atguigu.com  # curl http://localhost:9527/payment/lb -H "Host:afae.atguigu.com"
+
+eureka:
+  instance:
+    hostname: cloud-gateway-service
+  client: #服务提供者provider注册进eureka服务列表内
+    service-url:
+      register-with-eureka: true
+      fetch-registry: true
+      defaultZone: http://eureka7001.com:7001/eureka,http://eureka7002.com:7002/eureka
+      #defaultZone: http://eureka7001.com:7001/eureka
+```
+
+uri的协议为lb，表示启用Gateway的负载均衡功能。lb://serviceName是spring cloud gateway在微服务中自动为我们创建的负载均衡uri。
+
+### 6.Predicate
+
+[Spring Cloud Gateway中文文档](https://springdoc.cn/spring-cloud-gateway/#gateway-request-predicates-factories)
+
+![image-20230727231549369](imag/image-20230727231549369.png)
+
+### 7.Filter
 
 
 
