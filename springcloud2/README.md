@@ -317,6 +317,309 @@ uri的协议为lb，表示启用Gateway的负载均衡功能。lb://serviceName�
 
 ![image-20230727231549369](imag/image-20230727231549369.png)
 
+#### 6.1 After
+
+`After` 路由谓词工厂需要一个参数，即一个日期时间（这是一个java `ZonedDateTime`）。这个谓词匹配发生在指定日期时间之后的请求。下面的例子配置了一个After路由谓词。
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: after_route
+        uri: https://example.org
+        predicates:
+        - After=2017-01-20T17:42:47.789-07:00[America/Denver]
+```
+
+该路由与北美山区时间（丹佛）2017年1月20日17:42之后发出的任何请求相匹配。
+
+#### 6.2 Before
+
+`Before` 路由谓词工厂只需要一个参数，即 `datetime`（这是一个java `ZonedDateTime`）。这个谓词匹配发生在指定 `datetime` 之前的请求。下面的例子配置了一个Before路由谓词。
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: before_route
+        uri: https://example.org
+        predicates:
+        - Before=2017-01-20T17:42:47.789-07:00[America/Denver]
+```
+
+该路由与北美山区时间2017年1月20日17:42（丹佛）之前发出的任何请求相匹配。
+
+#### 6.3 Between
+
+`Between` 路由谓词工厂需要两个参数，`datetime1` 和 `datetime2`，它们是java `ZonedDateTime` 对象。这个谓词匹配发生在 `datetime1` 之后和 `datetime2` 之前的请求。`datetime2` 的参数必须在 `datetime1` 之后。下面的例子配置了一个 between 路由谓词。
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: between_route
+        uri: https://example.org
+        predicates:
+        - Between=2017-01-20T17:42:47.789-07:00[America/Denver], 2017-01-21T17:42:47.789-07:00[America/Denver]
+
+```
+
+这个路由匹配2017年1月20日山区时间（丹佛）17:42之后和2017年1月21日山区时间（丹佛）17:42之前的任何请求。这对维护窗口可能是有用的。
+
+#### 6.4 Cookie
+
+`Cookie` 路由谓词工厂接受两个参数，即 cookie `name` 和一个 `regexp`（这是一个Java正则表达式）。这个谓词匹配具有给定名称且其值符合正则表达式的cookie。下面的例子配置了一个cookie路由谓词工厂。
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: cookie_route
+        uri: https://example.org
+        predicates:
+        - Cookie=chocolate, ch.p
+```
+
+这个路由匹配有一个名为 `chocolate` 的cookie，其值符合 `ch.p` 正则表达式的请求。
+
+#### 6.5 Header
+
+`Header` 路由谓词工厂需要两个参数，`header` 和一个 `regexp`（这是一个Java正则表达式）。这个谓词与具有给定名称且其值与正则表达式相匹配的 header 匹配。下面的例子配置了一个 header 路由谓词。
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: header_route
+        uri: https://example.org
+        predicates:
+        - Header=X-Request-Id, \d+
+
+```
+
+如果请求有一个名为 `X-Request-Id` 的header，其值与 `\d+` 正则表达式相匹配（也就是说，它的值是一个或多个数字），则该路由匹配。
+
+#### 6.6 Host
+
+`Host` 路由谓语工厂接受一个参数：一个主机（Host）名称的 `patterns` 列表。该pattern是Ant风格的模式，以 `.` 为分隔符。这个谓词匹配符合该pattern的Host header。下面的例子配置了一个 host 路由谓词。
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: host_route
+        uri: https://example.org
+        predicates:
+        - Host=**.somehost.org,**.anotherhost.org
+
+```
+
+支持URI模板变量（如 `{sub}.myhost.org`）。
+
+如果请求的 `Host` header的值为 `www.somehost.org` 或 `beta.somehost.org` 或 `www.anotherhost.org`，则该路由匹配。
+
+这个谓词提取URI模板变量（比如前面例子中定义的 `sub`）作为名称和值的映射，并将其放在 `ServerWebExchange.getAttributes()` 中，key值定义在 `ServerWebExchangeUtils.URI_TEMPLATE_VARIABLES_ATTRIBUTE`。然后这些值就可以被 [`GatewayFilter` 工厂](https://springdoc.cn/spring-cloud-gateway/#gateway-route-filters)使用了
+
+#### 6.7 Method
+
+`Method` 路由谓词工厂接受一个 `methods` 参数，它是一个或多个参数：要匹配的HTTP方法。下面的例子配置了一个 method 路由谓词。
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: method_route
+        uri: https://example.org
+        predicates:
+        - Method=GET,POST
+
+```
+
+如果请求方式是 `GET` 或 `POST`，则该路由匹配。
+
+#### 6.8 Path
+
+`Path` 路由谓词工厂需要两个参数：一个Spring `PathMatcher` `patterns` 的list和一个可选的flag `matchTrailingSlash`（默认为 `true`）。下面的例子配置了一个path路由谓词。
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: path_route
+        uri: https://example.org
+        predicates:
+        - Path=/red/{segment},/blue/{segment}
+
+```
+
+如果请求路径是 `/red/1` 或 `/red/1/` 或 `/red/blue` 或 `/blue/green`，则该路由匹配。
+
+如果 `matchTrailingSlash` 被设置为 `false`，那么请求路径 `/red/1/` 将不会被匹配。
+
+这个谓词提取URI模板变量（比如前面例子中定义的 `segment`）作为name和value的映射，并把它放在 `ServerWebExchange.getAttributes()` 中，KEY值定义在 `ServerWebExchangeUtils.URI_TEMPLATE_VARIABLES_ATTRIBUTE`。然后这些值就可以被 [`GatewayFilter` 工厂](https://springdoc.cn/spring-cloud-gateway/#gateway-route-filters)使用了。
+
+有一个实用的方法（称为 `get`），可以使访问这些变量变得更容易。下面的例子显示了如何使用 `get` 方法。
+
+```java
+Map<String, String> uriVariables = ServerWebExchangeUtils.getUriTemplateVariables(exchange);
+
+String segment = uriVariables.get("segment");
+```
+
+#### 6.9 Query
+
+`Query` 路由谓词工厂需要两个参数：一个必需的 `param` 和一个可选的 `regexp`（这是一个Java正则表达式）。下面的例子配置了一个 query 路由谓词。
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: query_route
+        uri: https://example.org
+        predicates:
+        - Query=green
+
+```
+
+如果请求包含一个 `green` 的查询参数，前面的路由就会匹配。
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: query_route
+        uri: https://example.org
+        predicates:
+        - Query=red, gree.
+
+```
+
+如果请求中包含一个 `red` 的查询参数，其值与 `gree.` 表达式相匹配，那么路由就会匹配。例如： `green` 和 `greet` 
+
+#### 6.10 RemoteAddr
+
+`RemoteAddr` 路由谓词工厂接受一个 `sources` 集合（最小长度为1），它是CIDR注解（IPv4或IPv6）字符串，如 `192.168.0.1/16`（其中 `192.168.0.1` 是一个IP地址，`16` 是一个子网掩码）。下面的例子配置了一个RemoteAddr路由谓词。
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: remoteaddr_route
+        uri: https://example.org
+        predicates:
+        - RemoteAddr=192.168.1.1/24
+
+```
+
+如果请求的远程地址 `192.168.1.10`，则该路由匹配。
+
+##### 6.10.1 修改远程地址（Remote Addresse）的解析方式
+
+默认情况下，RemoteAddr路由谓语工厂使用传入请求中的远程地址。如果Spring Cloud Gateway位于代理层后面，这可能与实际的客户IP地址不一致。
+
+你可以通过设置一个自定义的 `RemoteAddressResolver` 来定制远程地址的解析方式。Spring Cloud Gateway有一个非默认的远程地址解析器，它是基于 [X-Forwarded-For Header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For)的，即 `XForwardedRemoteAddressResolver`。
+
+`XForwardedRemoteAddressResolver` 有两个静态构造方法，它们对安全问题采取了不同的方法。
+
+- `XForwardedRemoteAddressResolver::trustAll` 返回一个 `RemoteAddressResolver`，它总是采用 `X-Forwarded-For` 头中发现的第一个IP地址。这种方法容易受到欺骗，因为恶意的客户端可以为 `X-Forwarded-For` 设置一个初始值，这将被解析器所接受。
+- `XForwardedRemoteAddressResolver::maxTrustedIndex` 需要一个索引，该索引与在 Spring Cloud Gateway 前面运行的可信基础设施的数量相关。例如，如果 Spring Cloud Gateway 只能通过 HAProxy 访问，那么应使用1的值。如果在Spring Cloud Gateway被访问之前需要经过2个受信任的基础设施，那么应该使用2的值。
+
+请考虑以下 header 值。
+
+```
+X-Forwarded-For: 0.0.0.1, 0.0.0.2, 0.0.0.3
+```
+
+以下的 `maxTrustedIndex` 值产生以下的远程地址。
+
+| `maxTrustedIndex`        | 结果                                                   |
+| :----------------------- | :----------------------------------------------------- |
+| [`Integer.MIN_VALUE`,0]  | (无效, 初始化时会抛出 `IllegalArgumentException` 异常) |
+| 1                        | 0.0.0.3                                                |
+| 2                        | 0.0.0.2                                                |
+| 3                        | 0.0.0.1                                                |
+| [4, `Integer.MAX_VALUE`] | 0.0.0.1                                                |
+
+下面的例子显示了如何用Java实现同样的配置。
+
+*GatewayConfig.java*
+
+```java
+RemoteAddressResolver resolver = XForwardedRemoteAddressResolver
+    .maxTrustedIndex(1);
+
+...
+
+.route("direct-route",
+    r -> r.remoteAddr("10.1.1.1", "10.10.1.1/24")
+        .uri("https://downstream1")
+.route("proxied-route",
+    r -> r.remoteAddr(resolver, "10.10.1.1", "10.10.1.1/24")
+        .uri("https://downstream2")
+)
+
+
+```
+
+
+
+#### 6.11 Weight
+
+`Weight` 路由谓语工厂需要两个参数：`group` 和 `weight`（一个int值）。weight 是按 group 计算的。下面的例子配置了一个 weight 路由谓词。
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: weight_high
+        uri: https://weighthigh.org
+        predicates:
+        - Weight=group1, 8
+      - id: weight_low
+        uri: https://weightlow.org
+        predicates:
+        - Weight=group1, 2
+
+```
+
+此路由将转发~80%的流量到 `weighthigh.org`，~20%的流量到 `weighlow.org`。
+
+#### 6.12 XForwardedRemoteAddr
+
+`XForwarded Remote Addr` 路由谓语工厂接受一个 `sources` 集合（最长度为 1），这些 sources 是 CIDR注解（IPv4 或 IPv6）字符串，如 `192.168.0.1/16`（其中 `192.168.0.1` 是一个 IP 地址，`16` 是子网掩码）。
+
+这个路由谓词允许根据 `X-Forwarded-For` 的 HTTP Header 对请求进行过滤。
+
+这可以与反向代理一起使用，如负载均衡器或web应用防火墙，只有当请求来自这些反向代理所使用的受信任的IP地址列表时，才应该被允许。
+
+下面的例子配置了一个 `XForwardedRemoteAddr` 路由谓词。
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: xforwarded_remoteaddr_route
+        uri: https://example.org
+        predicates:
+        - XForwardedRemoteAddr=192.168.1.1/24
+
+```
+
+例如，如果 `X-Forwarded-For` Header 包含 `192.168.1.10`，则该路由匹配。
+
 ### 7.Filter
 
 
